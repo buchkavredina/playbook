@@ -1,0 +1,30 @@
+---
+
+ - name: testplaybook
+   hosts: nodes
+   gather_facts: false
+
+   tasks:
+
+    - name: docker run container sshd        
+      raw: docker run -d -P --name test_sshd -p 8080:80 -v /static/content:/usr/share/nginx/html eg_sshd 
+    - name: install nginx
+      raw:  docker exec -ti test_sshd apt-get install nginx -y
+    - name: service nginx start
+      raw: docker exec -ti test_sshd service nginx start
+    - name: copy templates html page
+      copy: src=/usr/templates/page/ dest=/static/content
+    - name: tunung default
+      raw:  docker exec -ti test_sshd sed -i 's/\/var\/www\/html/\/usr\/share\/nginx\/html/g' /etc/nginx/sites-available/default
+    - name: Send cores
+      raw: sed -i 's/Core_var/'$(docker exec -ti test_sshd nproc| sed s/[^0-9]//g )'/g' /static/content/index.html
+    - name: Send memory
+      raw: sed -i 's/Memory_var/'$(docker stats --no-stream  test_sshd | awk '{print $6}' | awk '(NR == 2)' |  sed s/[^0-9A-Z.]//g)'/g' /static/content/index.html
+    - name: Send size
+      raw: sed -i 's/Size_var/'$(docker ps -as | grep test_sshd | awk '{print $14}')'/g' /static/content/index.html
+    - name: restart nginx
+      raw: docker exec -ti test_sshd service nginx restart
+
+
+
+
