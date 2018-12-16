@@ -5,15 +5,16 @@
    gather_facts: false
 
    tasks:
-
+    - name: copy files
+      copy: src=/usr/templates/page/ dest=/static/content
+    - name: build image
+      raw: docker build -t eg_sshd -f /static/content/Dockerfile .
     - name: docker run container sshd        
       raw: docker run -d -P --name test_sshd -p 8080:80 -v /static/content:/usr/share/nginx/html eg_sshd 
     - name: install nginx
       raw:  docker exec -ti test_sshd apt-get install nginx -y
     - name: service nginx start
       raw: docker exec -ti test_sshd service nginx start
-    - name: copy templates html page
-      copy: src=/usr/templates/page/ dest=/static/content
     - name: tunung default
       raw:  docker exec -ti test_sshd sed -i 's/\/var\/www\/html/\/usr\/share\/nginx\/html/g' /etc/nginx/sites-available/default
     - name: Send cores
