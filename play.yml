@@ -16,7 +16,7 @@
       raw:  docker exec -ti test_sshd apt-get install nginx -y
     - name: service nginx start
       raw: docker exec -ti test_sshd service nginx start
-    - name: copy dockerfile
+    - name: copy index.html
       copy: src=/usr/templates/page/index.html dest=/static/content
     - name: tunung default
       raw:  docker exec -ti test_sshd sed -i 's/\/var\/www\/html/\/usr\/share\/nginx\/html/g' /etc/nginx/sites-available/default
