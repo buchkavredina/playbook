@@ -1,3 +1,4 @@
+
 ---
 
  - name: testplaybook
@@ -5,16 +6,18 @@
    gather_facts: false
 
    tasks:
-    - name: copy files
-      copy: src=/usr/templates/page/ dest=/static/content
+    - name: copy dockerfile
+      copy: src=/usr/templates/page/Dockerfile dest=/static/content
     - name: build image
       raw: docker build -t eg_sshd -f /static/content/Dockerfile .
-    - name: docker run container sshd        
-      raw: docker run -d -P --name test_sshd -p 8080:80 -v /static/content:/usr/share/nginx/html eg_sshd 
+    - name: docker run container sshd
+      raw: docker run -d -P --name test_sshd -p 8080:80 -v /static/content:/usr/share/nginx/html eg_sshd
     - name: install nginx
       raw:  docker exec -ti test_sshd apt-get install nginx -y
     - name: service nginx start
       raw: docker exec -ti test_sshd service nginx start
+    - name: copy dockerfile
+      copy: src=/usr/templates/page/index.html dest=/static/content
     - name: tunung default
       raw:  docker exec -ti test_sshd sed -i 's/\/var\/www\/html/\/usr\/share\/nginx\/html/g' /etc/nginx/sites-available/default
     - name: Send cores
@@ -25,7 +28,6 @@
       raw: sed -i 's/Size_var/'$(docker ps -as | grep test_sshd | awk '{print $14}')'/g' /static/content/index.html
     - name: restart nginx
       raw: docker exec -ti test_sshd service nginx restart
-
 
 
 
